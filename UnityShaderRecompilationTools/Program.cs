@@ -130,10 +130,7 @@ namespace UnityShaderRecompilationTools
                         File.WriteAllText(shaderFile, shader);
                     }
                 }
-                foreach(var modifier in _modifiers)
-                {
 
-                }
                 // recompile with shader file infos
                 // section has not been converted to a new method because all recompilation happens at once, so individual logging of recompile efforts is unnecessary
                 Console.WriteLine("Compiling all shader bundles...");
