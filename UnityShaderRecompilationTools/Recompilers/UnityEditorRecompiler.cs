@@ -32,7 +32,7 @@ namespace UnityShaderRecompilationTools.Recompilers
         {
             if (String.IsNullOrWhiteSpace(_unityInstall) || !File.Exists(_unityInstall)) throw new FileNotFoundException($"Unity {UnityVersion} editor could not be found! Please pass a valid executable path with --unity-editor-path");
 
-            var unityProjectBaseLocation = Path.Combine(AppContext.BaseDirectory, "../../../../", "UnityProject");
+            var unityProjectBaseLocation = Path.Combine(AppContext.BaseDirectory, "UnityProject");
             if (!Directory.Exists(unityProjectBaseLocation)) throw new DirectoryNotFoundException($"Could not find the UnityProject folder! Make sure it's in the same folder as the {typeof(UnityEditorRecompiler).Namespace} executable");
 
             // copy unity project
@@ -62,6 +62,7 @@ namespace UnityShaderRecompilationTools.Recompilers
 
 
             Console.WriteLine($"Unity Install: {_unityInstall}");
+            Console.WriteLine($"Unity Project Path: {newUnityProjectLocation}");
             // Start Unity Process
             StartUnityProject(newUnityProjectLocation, renderingMode);
 

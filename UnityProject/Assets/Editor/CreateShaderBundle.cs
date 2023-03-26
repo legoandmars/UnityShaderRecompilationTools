@@ -98,7 +98,7 @@ public class CreateShaderBundle
 
         
             BuildTargetGroup selectedBuildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-            BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
+            BuildTarget activeBuildTarget = BuildTarget.StandaloneWindows64;
             
             PrefabUtility.SaveAsPrefabAsset(shaderParent, "Assets/_Shaders.prefab");
             AssetBundleBuild assetBundleBuild = default;
@@ -110,7 +110,9 @@ public class CreateShaderBundle
 
             BuildPipeline.BuildAssetBundles(Application.temporaryCachePath,
                 new AssetBundleBuild[] {assetBundleBuild}, BuildAssetBundleOptions.ForceRebuildAssetBundle,
-                EditorUserBuildSettings.activeBuildTarget);
+                activeBuildTarget
+            );
+            
             EditorPrefs.SetString("currentBuildingAssetBundlePath", folderPath);
             EditorUserBuildSettings.SwitchActiveBuildTarget(selectedBuildTargetGroup, activeBuildTarget);
 
