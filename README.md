@@ -18,6 +18,9 @@ UnityShaderRecompilationTools [List<string>...] [options]
 # Example: 
 UnityShaderRecompilationTools "C:/Users/YourName/Bundles/fizz.bundle" "C:/Users/YourName/Bundles/buzz.bundle"
 
+# Linux Example:
+dotnet UnityShaderRecompilationTools.dll "./fizz.bundle" "./buzz.bundle"
+
 # Also supported: drag-and-dropping files onto the .exe on windows
 ```
 
