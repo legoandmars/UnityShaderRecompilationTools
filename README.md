@@ -27,6 +27,7 @@ Example use cases:
 - Module to detect if shaders need to be recompiled/decompiled in the first place.
     - Current goal: detect if shader was compiled for Single Pass or Single Pass Instanced.
     - Ideally, this module should work from within a .NET framework 4 environment without Custom Assetbundle Dependencies so it can be integrated directly into mods.
+    - **This module should be made available in the MIT license for ease of use**
 
 - Module/tests to automatically detect if shader recompilation failed.
     - This is kind of abstract, but is probably partially automatable. Things such as a model only showing up in one eye for VR when changing the VR rendering mode would be an obvious fail that can be detected programmatically. 
@@ -35,3 +36,6 @@ Example use cases:
     - This file should be easy to load in a .NET framework 4 environment without Custom Assetbundle Dependencies.
     - This format will probably just be multiple assetbundles combined into a single file somehow.
     - A way to directly combine this `.shaderbundle` with other (normal) assetbundles in a single file would be beneficial for custom content going forward.
+    - **This format spec should be made available in the MIT license for ease of use**
+
+- Web API / Service support
