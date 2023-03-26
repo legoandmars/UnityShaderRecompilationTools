@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /E /Y /F /q &quot;$(ProjectDir)../UnityProject&quot; &quot;$(TargetDir)UnityProject\&quot;" />
+    <Exec Command="xcopy /E /Y /F &quot;$(ProjectDir)../UnityProject&quot; &quot;$(TargetDir)UnityProject&quot;" />
   </Target>
 
 </Project>
