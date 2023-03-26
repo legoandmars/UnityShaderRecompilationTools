@@ -51,7 +51,7 @@ UnityShaderRecompilationTools "C:/Users/YourName/Bundles/fizz.bundle" "C:/Users/
 
 - Definitive `.shaderbundle` spec that supports multiple graphics APIs (Metal, DirectX, etc..) and multiple compilation types (Single Pass, Single Pass Instanced) in one file
     - This file should be easy to load in a .NET framework 4 environment without Custom Assetbundle Dependencies.
-    - This format will probably just be multiple assetbundles combined into a single file somehow.
+    - This format will probably just be multiple assetbundles or shader variants combined into a single file somehow.
     - A way to directly combine this `.shaderbundle` with other (normal) assetbundles in a single file would be beneficial for custom content going forward.
     - **This format spec should be made available in the MIT license for ease of use**
 
