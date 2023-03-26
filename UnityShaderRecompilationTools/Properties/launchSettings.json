@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "UnityShaderRecompilationTools": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\CustomNotes\\!!Minecraft.bloq\" \"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\CustomNotes\\CatNote.bloq\" --overwrite-output"
-    }
-  }
-}
