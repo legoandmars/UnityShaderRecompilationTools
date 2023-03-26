@@ -10,6 +10,7 @@ using UnityShaderRecompilationTools.Decompilers;
 using UnityShaderRecompilationTools.Interfaces;
 using UnityShaderRecompilationTools.Models;
 using UnityShaderRecompilationTools.Recompilers;
+using UnityShaderRecompilationTools.ShaderModifiers;
 
 namespace UnityShaderRecompilationTools
 {
@@ -17,7 +18,7 @@ namespace UnityShaderRecompilationTools
     {
         private static IDecompiler _decompiler = new AssetRipperDecompiler();
         private static IRecompiler _recompiler = new UnityEditorRecompiler();
-
+        private static List<IShaderModifier> _modifiers = new List<IShaderModifier>() { new FixNaNModifier() };
         static async Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new() { Description = "AssetRipper Console" };
@@ -58,7 +59,7 @@ namespace UnityShaderRecompilationTools
                 getDefaultValue: () => null);
             rootCommand.AddOption(unityEditorPath);
 
-            // TODO: need to add stuff that detects if a shader is compiled for VR automatically
+            // TODO: support for compiling multiple VR rendering modes
             // and more "automatic" handling of this
             // for now this is set to "compile with single pass instanced" by default
 
@@ -92,6 +93,9 @@ namespace UnityShaderRecompilationTools
         {
             try
             {
+                // add some modifiers depending on flags
+                if (renderingMode == VRRenderingMode.SinglePassInstanced) _modifiers.Add(new AddInstancingModifier(renderingMode));
+
                 var directory = outputDirectory.FullName;
 
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
@@ -111,6 +115,25 @@ namespace UnityShaderRecompilationTools
                     }
                 }
 
+                Console.WriteLine("Applying shader code modifiers...");
+                Console.WriteLine(string.Join(", ", _modifiers.Select(x => x.GetType().Name)));
+                foreach (var shaderBundle in shaderBundleInfos)
+                {
+                    foreach(var shaderFile in shaderBundle.DecompiledShaderPaths)
+                    {
+                        var shader = File.ReadAllText(shaderFile);
+                        foreach(var modifier in _modifiers)
+                        {
+                            var modifierOutput = modifier.ModifyShader(shader);
+                            if (!String.IsNullOrWhiteSpace(modifierOutput)) shader = modifierOutput;
+                        }
+                        File.WriteAllText(shaderFile, shader);
+                    }
+                }
+                foreach(var modifier in _modifiers)
+                {
+
+                }
                 // recompile with shader file infos
                 // section has not been converted to a new method because all recompilation happens at once, so individual logging of recompile efforts is unnecessary
                 Console.WriteLine("Compiling all shader bundles...");
