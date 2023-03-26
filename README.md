@@ -67,7 +67,7 @@ UnityShaderRecompilationTools "C:/Users/YourName/Bundles/fizz.bundle" "C:/Users/
 git clone https://github.com/legoandmars/UnityShaderRecompilationTools
 cd UnityShaderRecompilationTools
 git submodule init
-git submodule update
+git submodule update --remote
 ```
 Make sure to manually open the AssetRipper .sln file and build that before opening the UnityShaderRecompilationTools project!
 
