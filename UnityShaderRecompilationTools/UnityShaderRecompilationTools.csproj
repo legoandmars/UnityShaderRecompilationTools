@@ -13,13 +13,13 @@
 
   <ItemGroup>
     <Reference Include="AssetRipper.Export.UnityProjects">
-      <HintPath>..\..\AssetRipper\Source\Bins\AssetRipper\Debug\AssetRipper.Export.UnityProjects.dll</HintPath>
+      <HintPath>..\AssetRipper\Source\Bins\AssetRipper\Release\AssetRipper.Export.UnityProjects.dll</HintPath>
     </Reference>
     <Reference Include="AssetRipper.Import">
-      <HintPath>..\..\AssetRipper\Source\Bins\AssetRipper\Debug\AssetRipper.Import.dll</HintPath>
+      <HintPath>..\AssetRipper\Source\Bins\AssetRipper\Release\AssetRipper.Import.dll</HintPath>
     </Reference>
     <Reference Include="AssetRipper.IO.Files">
-      <HintPath>..\..\AssetRipper\Source\Bins\AssetRipper\Debug\AssetRipper.IO.Files.dll</HintPath>
+      <HintPath>..\AssetRipper\Source\Bins\AssetRipper\Release\AssetRipper.IO.Files.dll</HintPath>
     </Reference>
   </ItemGroup>
 
