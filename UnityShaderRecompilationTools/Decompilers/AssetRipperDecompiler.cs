@@ -12,6 +12,8 @@ using System.IO;
 
 namespace UnityShaderRecompilationTools.Decompilers
 {
+    // This decompiler has problem with shader variants. It will only pick the first shader variant to decompile, and thus can be unreliable for some shaders
+    // NOTE: The first variant will always be a non-VR version, so going from Single Pass Instanced -> Single Pass *should be the same* as vice versa
     public class AssetRipperDecompiler : IDecompiler
     {
         public List<string> DecompileAssetBundleIntoShaderFiles(string file, string exportPath, bool keepDecompileArtifacts)

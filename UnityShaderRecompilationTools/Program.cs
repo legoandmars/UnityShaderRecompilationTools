@@ -9,11 +9,15 @@ using System.IO;
 using UnityShaderRecompilationTools.Decompilers;
 using UnityShaderRecompilationTools.Interfaces;
 using UnityShaderRecompilationTools.Models;
+using UnityShaderRecompilationTools.Recompilers;
 
 namespace UnityShaderRecompilationTools
 {
     internal class Program
     {
+        private static IDecompiler _decompiler = new AssetRipperDecompiler();
+        private static IRecompiler _recompiler = new UnityEditorRecompiler();
+
         static async Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new() { Description = "AssetRipper Console" };
@@ -27,6 +31,7 @@ namespace UnityShaderRecompilationTools
                             getDefaultValue: () => new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "output")));
             rootCommand.AddOption(outputOption);
 
+            // TODO: make this work on the actual assetbundles in-unity-project
             var overwriteOutputOption = new Option<bool>(
                             aliases: new[] { "--overwrite-output" },
                             description: "Overwrite the output directory if it already exists.",
@@ -45,48 +50,36 @@ namespace UnityShaderRecompilationTools
                             getDefaultValue: () => false);
             rootCommand.AddOption(keepRecompileArtifactsOption);
 
+            // TODO: selectively remove this if recompiler is not unity.
+            // probably unnecessary until another recompiler is actually found.
+            var unityEditorPath = new Option<string?>(
+                aliases: new[] { "-u", "--unity-editor-path" },
+                description: $"The Unity {UnityEditorRecompiler.UnityVersion} editor executable to open the recompilation project with. Do NOT use this unless the automatic detection is failing!",
+                getDefaultValue: () => null);
+            rootCommand.AddOption(unityEditorPath);
+
             // TODO: need to add stuff that detects if a shader is compiled for VR automatically
             // and more "automatic" handling of this
             // for now this is set to "compile with single pass instanced" by default
 
             var renderingModeOption = new Option<VRRenderingMode>(
-                aliases: new[] { "--vr-rendering-mode" },
+                aliases: new[] {"-r", "--vr-rendering-mode" },
                 description: "Recompile for a specific vr rendering mode",
                 getDefaultValue: () => VRRenderingMode.SinglePassInstanced);
             rootCommand.AddOption(renderingModeOption);
 
 
-            rootCommand.SetHandler(ProcessCommand, inputFilesOption, outputOption, overwriteOutputOption, keepDecompileArtifactsOption, keepRecompileArtifactsOption, renderingModeOption);
+            // TODO: "export modes"
+            // current export mode, add .shaderbundle next to existing bundle mode, and "repackage" bundle mode
 
-           return await new CommandLineBuilder(rootCommand)
+            rootCommand.SetHandler(ProcessCommand, inputFilesOption, outputOption, overwriteOutputOption, keepDecompileArtifactsOption, keepRecompileArtifactsOption, renderingModeOption, unityEditorPath);
+
+            return await new CommandLineBuilder(rootCommand)
                 .UseHelp()
                 .UseParseErrorReporting()
                 .Build()
                 .InvokeAsync(args);
-
-            /*
-            var fileOption = new Option<List<FileInfo>?>(
-                name: "--files",
-                parseArgument: new ParseArgument<List<FileInfo>>().ExistingOnly(),
-                description: "The files to read and display on the console.");
-
-            var rootCommand = new RootCommand("Sample app for System.CommandLine");
-            rootCommand.AddOption(fileOption);
-
-            rootCommand.SetHandler((files) =>
-            {
-                foreach (var file in files)
-                {
-                    ReadFile(file!);
-                }
-            },
-                fileOption);
-
-            return await rootCommand.InvokeAsync(args);*/
-
         }
-
-        private static IDecompiler decompiler = new AssetRipperDecompiler();
 
         static async void ProcessCommand(
             List<string> inputFiles, 
@@ -94,7 +87,8 @@ namespace UnityShaderRecompilationTools
             bool overwriteOutputDirectory, 
             bool keepDecompileArtifacts, 
             bool keepRecompileArtifacts,
-            VRRenderingMode renderingMode)
+            VRRenderingMode renderingMode,
+            string? unityEditorPath)
         {
             try
             {
@@ -105,12 +99,45 @@ namespace UnityShaderRecompilationTools
                 if (inputFiles.Count == 0) throw new ArgumentException("No valid files passed");
 
                 // Do file decompiling individually to prevent "mixing" of different assetbundle shaders
+                List<ShaderBundleInfo> shaderBundleInfos = new();
+                //Dictionary<string, List<string>> shaderFileInfos = new();
                 foreach (var file in inputFiles)
                 {
                     var shaderFiles = DecompileFile(file, directory, overwriteOutputDirectory, keepDecompileArtifacts);
+
+                    if (shaderFiles != null)
+                    {
+                        shaderBundleInfos.Add(new ShaderBundleInfo(file, shaderFiles));
+                    }
+                }
+
+                // recompile with shader file infos
+                // section has not been converted to a new method because all recompilation happens at once, so individual logging of recompile efforts is unnecessary
+                Console.WriteLine("Compiling all shader bundles...");
+
+                if (_recompiler is UnityEditorRecompiler && !String.IsNullOrWhiteSpace(unityEditorPath)) (_recompiler as UnityEditorRecompiler).ForceSetUnityInstall(unityEditorPath);
+                var newBundleInfos = _recompiler.RecompileShaderFilesIntoAssetbundle(shaderBundleInfos, directory, keepRecompileArtifacts, keepDecompileArtifacts, renderingMode);
+
+                List<ShaderBundleInfo> successfulBundles = newBundleInfos.Where(x => x.State == ShaderBundleState.RecompiledSuccesfully).ToList();
+                List<ShaderBundleInfo> unsuccessfulBundles = newBundleInfos.Where(x => x.State == ShaderBundleState.RecompiledWithErrors).ToList();
+
+                // do some logging at the end
+                Console.WriteLine($"\nAssetbundles successfully decompiled: {shaderBundleInfos.Count}/{inputFiles.Count} ({(shaderBundleInfos.Count / inputFiles.Count) * 100}%)");
+                Console.WriteLine($"Assetbundles successfully recompiled: {successfulBundles.Count}/{inputFiles.Count} ({(successfulBundles.Count / inputFiles.Count) * 100}%)");
+                if (unsuccessfulBundles.Count > 0)
+                {
+                    Console.WriteLine($"Assetbundles recompiled with errors (may be unusable): {unsuccessfulBundles.Count}/{inputFiles.Count} ({(unsuccessfulBundles.Count / inputFiles.Count) * 100}%)");
+                    Console.WriteLine("The following shaders failed to compile properly:");
+                    foreach(var bundle in unsuccessfulBundles)
+                    {
+                        foreach(var shader in bundle.BrokenShaders)
+                        {
+                            Console.WriteLine($"{bundle.AssetbundleName} - {shader}");
+                        }
+                    }
                 }
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 Console.Error.WriteLine(exception);
             }
@@ -119,7 +146,7 @@ namespace UnityShaderRecompilationTools
         static List<string> DecompileFile(string file, string directory, bool overwriteOutputDirectory, bool keepDecompileArtifacts)
         {
             // Essentially just IDecompiler.DecompileAssetBundleIntoShaderFiles but with some I/O checking and logging
-            if (!File.Exists(file)) throw new ArgumentException($"File {file} does not exist.");
+            if (!File.Exists(file)) throw new FileNotFoundException($"File {file} does not exist.");
 
             // Create directory to export into per-file
             var exportPath = Path.Combine(directory, Path.GetFileNameWithoutExtension(file));
@@ -131,7 +158,7 @@ namespace UnityShaderRecompilationTools
             
             Directory.CreateDirectory(exportPath);
 
-            var shaderFiles = decompiler.DecompileAssetBundleIntoShaderFiles(file, exportPath, keepDecompileArtifacts);
+            var shaderFiles = _decompiler.DecompileAssetBundleIntoShaderFiles(file, exportPath, keepDecompileArtifacts);
             Console.WriteLine($"Successfully decompiled {Path.GetFileName(file)}...");
 
             foreach(var shaderFile in shaderFiles)
