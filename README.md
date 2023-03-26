@@ -61,6 +61,15 @@ UnityShaderRecompilationTools "C:/Users/YourName/Bundles/fizz.bundle" "C:/Users/
     - Once a bundle is uploaded, it should have its `.shaderbundle` stored and returned instead of reprocessing if hash matches
     - A way to add "custom" caches in case somebody has the original shader source would be great, too
 
+## For Developers
+### Initializing repo:
+```bash
+git clone https://github.com/legoandmars/UnityShaderRecompilationTools
+cd UnityShaderRecompilationTools
+git submodule init
+```
+Make sure to manually open the AssetRipper .sln file and build that before opening the UnityShaderRecompilationTools project!
+
 ## Legal Disclaimers
 
 UnityShaderRecompilationTools is licensed under the [GNU General Public License v3.0](License.md).
