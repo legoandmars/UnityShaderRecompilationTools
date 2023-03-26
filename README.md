@@ -39,6 +39,8 @@ UnityShaderRecompilationTools "C:/Users/YourName/Bundles/fizz.bundle" "C:/Users/
     - TODO: Look into ways of doing this without using the Unity Editor, as it adds a *significant* amount of overhead.
     - TODO: Add support for different unity versions.
 
+- More robust shader platform detection/compilation, so you can convert DirectX -> OpenGL and vice versa
+
 - Module to detect if shaders need to be recompiled/decompiled in the first place.
     - Current goal: detect if shader was compiled for Single Pass or Single Pass Instanced.
     - Ideally, this module should work from within a .NET framework 4 environment without Custom Assetbundle Dependencies so it can be integrated directly into mods.
